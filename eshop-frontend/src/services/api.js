@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 // Configuration de base pour l'API Django
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const DEBUG_MODE = import.meta.env.VITE_DEBUG_MODE === 'true';
 
 // Instance axios configurée
 const api = axios.create({
@@ -12,14 +13,26 @@ const api = axios.create({
   },
 });
 
-// Intercepteur pour les erreurs
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('API Error:', error);
-    return Promise.reject(error);
-  }
-);
+// Intercepteur pour les logs en mode debug
+if (DEBUG_MODE) {
+  api.interceptors.request.use(
+    (config) => {
+      console.log('🚀 API Request:', config.method?.toUpperCase(), config.url);
+      return config;
+    }
+  );
+
+  api.interceptors.response.use(
+    (response) => {
+      console.log('✅ API Response:', response.status, response.config.url);
+      return response;
+    },
+    (error) => {
+      console.error('❌ API Error:', error.response?.status, error.config?.url);
+      return Promise.reject(error);
+    }
+  );
+}
 
 // Services API
 export const apiService = {
@@ -43,6 +56,16 @@ export const apiService = {
   
   searchProductsByText: (query) => 
     api.get('/products/', { params: { search: query } }),
+
+  // Panier
+  getCart: () => api.get('/cart/'),
+  addToCart: (productId, quantity = 1) => 
+    api.post('/cart/add_item/', { product_id: productId, quantity }),
+  updateCartItem: (itemId, quantity) => 
+    api.put('/cart/update_item/', { item_id: itemId, quantity }),
+  removeFromCart: (itemId) => 
+    api.delete('/cart/remove_item/', { data: { item_id: itemId } }),
+  clearCart: () => api.delete('/cart/clear/'),
 };
 
 export default api;

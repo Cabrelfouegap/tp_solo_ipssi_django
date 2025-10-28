@@ -4,6 +4,8 @@ import styled from 'styled-components';
 import { theme } from '../theme';
 import { apiService } from '../services/api';
 import { LoadingSpinner, ErrorMessage } from '../components/Layout';
+import AppHeader from '../components/AppHeader';
+import AddToCartButton from '../components/AddToCartButton';
 
 const ProductContainer = styled.div`
   display: grid;
@@ -237,74 +239,80 @@ function ProductPage() {
 
   return (
     <div>
-      <BackButton to="/catalog">← Retour au catalogue</BackButton>
-      
-      <ProductContainer>
-        <ProductImageSection>
-          <ProductImageContainer>
-            {product.image ? (
-              <ProductImage 
-                src={product.image}
-                alt={product.name}
-                onError={(e) => {
-                  console.error('Erreur de chargement d\'image:', e.target.src);
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'flex';
-                }}
-              />
-            ) : null}
-            <PlaceholderImage style={product.image ? {display: 'none'} : {}}>
-            </PlaceholderImage>
-          </ProductImageContainer>
-          <StockStatus inStock={product.is_in_stock}>
-            {product.is_in_stock ? 'EN STOCK' : 'RUPTURE DE STOCK'}
-          </StockStatus>
-        </ProductImageSection>
+      <AppHeader />
+      <div style={{ padding: theme.spacing.xl, maxWidth: '1200px', margin: '0 auto' }}>
+        <BackButton to="/catalog">← Retour au catalogue</BackButton>
+        
+        <ProductContainer>
+          <ProductImageSection>
+            <ProductImageContainer>
+              {product.image ? (
+                <ProductImage 
+                  src={product.image}
+                  alt={product.name}
+                  onError={(e) => {
+                    console.error('Erreur de chargement d\'image:', e.target.src);
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <PlaceholderImage style={product.image ? {display: 'none'} : {}}>
+              </PlaceholderImage>
+            </ProductImageContainer>
+            <StockStatus inStock={product.is_in_stock}>
+              {product.is_in_stock ? 'EN STOCK' : 'RUPTURE DE STOCK'}
+            </StockStatus>
+          </ProductImageSection>
 
-        <ProductInfoSection>
-          <ProductCategory>{product.category.name}</ProductCategory>
-          <ProductTitle>{product.name}</ProductTitle>
-          <ProductPrice>{product.price}€</ProductPrice>
-          
-          <ProductDescription>
-            {product.description}
-          </ProductDescription>
+          <ProductInfoSection>
+            <ProductCategory>{product.category.name}</ProductCategory>
+            <ProductTitle>{product.name}</ProductTitle>
+            <ProductPrice>{product.price}€</ProductPrice>
+            
+            <ProductDescription>
+              {product.description}
+            </ProductDescription>
 
-          <ProductSpecs>
-            <h3 style={{ 
-              color: theme.colors.primary.neonGreen, 
-              fontFamily: theme.fonts.primary,
-              marginTop: 0 
-            }}>
-              Spécifications
-            </h3>
-            <SpecItem>
-              <SpecLabel>Référence</SpecLabel>
-              <SpecValue>#{product.id.toString().padStart(6, '0')}</SpecValue>
-            </SpecItem>
-            <SpecItem>
-              <SpecLabel>Stock disponible</SpecLabel>
-              <SpecValue>{product.stock} unités</SpecValue>
-            </SpecItem>
-            <SpecItem>
-              <SpecLabel>Statut</SpecLabel>
-              <SpecValue>
-                {product.is_available ? 'Disponible' : 'Indisponible'}
-              </SpecValue>
-            </SpecItem>
-            <SpecItem>
-              <SpecLabel>Produit phare</SpecLabel>
-              <SpecValue>{product.featured ? 'Oui' : 'Non'}</SpecValue>
-            </SpecItem>
-            <SpecItem>
-              <SpecLabel>Date d'ajout</SpecLabel>
-              <SpecValue>
-                {new Date(product.created_at).toLocaleDateString('fr-FR')}
-              </SpecValue>
-            </SpecItem>
-          </ProductSpecs>
-        </ProductInfoSection>
-      </ProductContainer>
+            {/* Bouton Ajouter au panier */}
+            <AddToCartButton product={product} />
+
+            <ProductSpecs>
+              <h3 style={{ 
+                color: theme.colors.primary.neonGreen, 
+                fontFamily: theme.fonts.primary,
+                marginTop: 0 
+              }}>
+                Spécifications
+              </h3>
+              <SpecItem>
+                <SpecLabel>Référence</SpecLabel>
+                <SpecValue>#{product.id.toString().padStart(6, '0')}</SpecValue>
+              </SpecItem>
+              <SpecItem>
+                <SpecLabel>Stock disponible</SpecLabel>
+                <SpecValue>{product.stock} unités</SpecValue>
+              </SpecItem>
+              <SpecItem>
+                <SpecLabel>Statut</SpecLabel>
+                <SpecValue>
+                  {product.is_available ? 'Disponible' : 'Indisponible'}
+                </SpecValue>
+              </SpecItem>
+              <SpecItem>
+                <SpecLabel>Produit phare</SpecLabel>
+                <SpecValue>{product.featured ? 'Oui' : 'Non'}</SpecValue>
+              </SpecItem>
+              <SpecItem>
+                <SpecLabel>Date d'ajout</SpecLabel>
+                <SpecValue>
+                  {new Date(product.created_at).toLocaleDateString('fr-FR')}
+                </SpecValue>
+              </SpecItem>
+            </ProductSpecs>
+          </ProductInfoSection>
+        </ProductContainer>
+      </div>
     </div>
   );
 }

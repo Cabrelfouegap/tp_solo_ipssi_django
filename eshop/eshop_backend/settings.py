@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Charger les variables d'environnement depuis .env
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,10 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k@r4d5khe!r3-jaxm9rycg$-9_)4br@d$5bm85vr@8dfxjw$+4'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-k@r4d5khe!r3-jaxm9rycg$-9_)4br@d$5bm85vr@8dfxjw$+4')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = []
 
@@ -84,7 +89,7 @@ WSGI_APPLICATION = 'eshop_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': BASE_DIR / os.getenv('DATABASE_NAME', 'db.sqlite3'),
     }
 }
 
@@ -149,21 +154,6 @@ REST_FRAMEWORK = {
     ],
 }
 
-# CORS configuration - Mode développement permissif
-CORS_ALLOW_ALL_ORIGINS = True  # Permet TOUTES les origines
+# CORS configuration
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5174').split(',')
 CORS_ALLOW_CREDENTIALS = True
-
-# Permet tous les headers
-CORS_ALLOW_HEADERS = [
-    '*'
-]
-
-# Permet toutes les méthodes HTTP
-CORS_ALLOW_METHODS = [
-    '*'
-]
-
-# Désactive les vérifications CORS strictes
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r".*",  # Accepte tout
-]

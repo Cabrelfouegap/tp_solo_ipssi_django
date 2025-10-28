@@ -16,13 +16,10 @@ import {
   FiArrowLeft
 } from 'react-icons/fi';
 import { theme } from '../theme';
+import HeaderWithCart from '../components/Header';
+import AddToCartButton from '../components/AddToCartButton';
 import {
   AppContainer,
-  Header,
-  HeaderContent,
-  Logo,
-  Nav,
-  NavLink,
   Main,
   Button,
   Card,
@@ -216,20 +213,6 @@ const ActionButtons = styled.div`
   margin-bottom: ${theme.spacing.xl};
 `;
 
-const AddToCartButton = styled(Button)`
-  flex: 1;
-  min-width: 200px;
-  padding: ${theme.spacing.lg} ${theme.spacing.xl};
-  font-size: 1.1rem;
-  font-weight: 600;
-  background: ${theme.colors.primary.gradient};
-  border: none;
-  
-  @media (max-width: ${theme.breakpoints.mobile}) {
-    min-width: auto;
-  }
-`;
-
 const WishlistButton = styled(Button)`
   padding: ${theme.spacing.lg} ${theme.spacing.xl};
   background: ${theme.colors.background.card};
@@ -388,24 +371,7 @@ function ProductDetailPage() {
   if (loading) {
     return (
       <AppContainer>
-        <Header>
-          <HeaderContent>
-            <Logo>
-              <FiZap style={{ marginRight: '0.5rem', color: '#F59E0B' }} />
-              TechShop
-            </Logo>
-            <Nav>
-              <NavLink as={Link} to="/">
-                <FiShoppingBag />
-                Accueil
-              </NavLink>
-              <NavLink as={Link} to="/catalog">
-                <FiShoppingCart />
-                Catalogue
-              </NavLink>
-            </Nav>
-          </HeaderContent>
-        </Header>
+        <HeaderWithCart />
         <Main>
           <LoadingSpinner />
         </Main>
@@ -416,15 +382,7 @@ function ProductDetailPage() {
   if (error || !product) {
     return (
       <AppContainer>
-        <Header>
-          <HeaderContent>
-            <Logo>TechShop</Logo>
-            <Nav>
-              <NavLink as={Link} to="/">Accueil</NavLink>
-              <NavLink as={Link} to="/catalog">Catalogue</NavLink>
-            </Nav>
-          </HeaderContent>
-        </Header>
+        <HeaderWithCart />
         <Main>
           <ErrorMessage>{error}</ErrorMessage>
           <Button as={Link} to="/catalog">
@@ -437,15 +395,7 @@ function ProductDetailPage() {
 
   return (
     <AppContainer>
-      <Header>
-        <HeaderContent>
-          <Logo>TechShop</Logo>
-          <Nav>
-            <NavLink as={Link} to="/">Accueil</NavLink>
-            <NavLink as={Link} to="/catalog">Catalogue</NavLink>
-          </Nav>
-        </HeaderContent>
-      </Header>
+      <HeaderWithCart />
 
       <Main>
         <Breadcrumb>
@@ -482,10 +432,14 @@ function ProductDetailPage() {
             </ProductDescription>
 
             <ActionButtons>
-              <AddToCartButton>
-                <FiShoppingCart />
-                Ajouter au panier
-              </AddToCartButton>
+              <div style={{ flex: 1 }}>
+                <AddToCartButton 
+                  product={product} 
+                  size="normal" 
+                  showQuantityControls={true} 
+                />
+              </div>
+              
               <WishlistButton>
                 <FiHeart />
                 Favoris

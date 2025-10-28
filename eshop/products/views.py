@@ -4,12 +4,16 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
-from .models import Category, Product
+from .models import Category, Product, Cart, CartItem
 from .serializers import (
     CategorySerializer, 
     ProductListSerializer, 
     ProductDetailSerializer,
-    ProductCreateUpdateSerializer
+    ProductCreateUpdateSerializer,
+    CartSerializer,
+    CartItemSerializer,
+    AddToCartSerializer,
+    UpdateCartItemSerializer
 )
 
 
@@ -138,3 +142,149 @@ class ProductViewSet(viewsets.ModelViewSet):
         
         serializer = ProductListSerializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class CartViewSet(viewsets.ModelViewSet):
+    """ViewSet pour gérer le panier d'achat"""
+    serializer_class = CartSerializer
+    
+    def get_queryset(self):
+        """Retourne le panier de la session courante"""
+        session_key = self.request.session.session_key
+        if not session_key:
+            self.request.session.create()
+            session_key = self.request.session.session_key
+        
+        return Cart.objects.filter(session_key=session_key)
+    
+    def get_or_create_cart(self):
+        """Récupère ou crée le panier pour la session courante"""
+        session_key = self.request.session.session_key
+        if not session_key:
+            self.request.session.create()
+            session_key = self.request.session.session_key
+        
+        cart, created = Cart.objects.get_or_create(session_key=session_key)
+        return cart
+    
+    def list(self, request):
+        """Retourne le panier de l'utilisateur"""
+        cart = self.get_or_create_cart()
+        serializer = CartSerializer(cart, context={'request': request})
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['post'])
+    def add_item(self, request):
+        """Ajoute un produit au panier"""
+        serializer = AddToCartSerializer(data=request.data)
+        if serializer.is_valid():
+            cart = self.get_or_create_cart()
+            product_id = serializer.validated_data['product_id']
+            quantity = serializer.validated_data['quantity']
+            
+            try:
+                product = Product.objects.get(id=product_id)
+                
+                # Vérifier le stock
+                cart_item, created = CartItem.objects.get_or_create(
+                    cart=cart,
+                    product=product,
+                    defaults={'quantity': quantity}
+                )
+                
+                if not created:
+                    # Article déjà dans le panier, augmenter la quantité
+                    new_quantity = cart_item.quantity + quantity
+                    if new_quantity > product.stock:
+                        return Response({
+                            'error': f'Stock insuffisant. Stock disponible: {product.stock}, '
+                                   f'quantité dans le panier: {cart_item.quantity}'
+                        }, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    cart_item.quantity = new_quantity
+                    cart_item.save()
+                
+                # Retourner le panier mis à jour
+                cart_serializer = CartSerializer(cart, context={'request': request})
+                return Response({
+                    'message': f'{product.name} ajouté au panier',
+                    'cart': cart_serializer.data
+                }, status=status.HTTP_201_CREATED)
+                
+            except Product.DoesNotExist:
+                return Response({
+                    'error': 'Produit introuvable'
+                }, status=status.HTTP_404_NOT_FOUND)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['put'])
+    def update_item(self, request):
+        """Met à jour la quantité d'un article dans le panier"""
+        cart = self.get_or_create_cart()
+        item_id = request.data.get('item_id')
+        
+        if not item_id:
+            return Response({
+                'error': 'item_id requis'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            cart_item = CartItem.objects.get(id=item_id, cart=cart)
+            serializer = UpdateCartItemSerializer(cart_item, data=request.data)
+            
+            if serializer.is_valid():
+                cart_item.quantity = serializer.validated_data['quantity']
+                cart_item.save()
+                
+                cart_serializer = CartSerializer(cart, context={'request': request})
+                return Response({
+                    'message': 'Quantité mise à jour',
+                    'cart': cart_serializer.data
+                })
+            
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+        except CartItem.DoesNotExist:
+            return Response({
+                'error': 'Article introuvable dans le panier'
+            }, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=False, methods=['delete'])
+    def remove_item(self, request):
+        """Supprime un article du panier"""
+        cart = self.get_or_create_cart()
+        item_id = request.data.get('item_id')
+        
+        if not item_id:
+            return Response({
+                'error': 'item_id requis'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            cart_item = CartItem.objects.get(id=item_id, cart=cart)
+            product_name = cart_item.product.name
+            cart_item.delete()
+            
+            cart_serializer = CartSerializer(cart, context={'request': request})
+            return Response({
+                'message': f'{product_name} supprimé du panier',
+                'cart': cart_serializer.data
+            })
+            
+        except CartItem.DoesNotExist:
+            return Response({
+                'error': 'Article introuvable dans le panier'
+            }, status=status.HTTP_404_NOT_FOUND)
+    
+    @action(detail=False, methods=['delete'])
+    def clear(self, request):
+        """Vide complètement le panier"""
+        cart = self.get_or_create_cart()
+        cart.items.all().delete()
+        
+        cart_serializer = CartSerializer(cart, context={'request': request})
+        return Response({
+            'message': 'Panier vidé',
+            'cart': cart_serializer.data
+        })

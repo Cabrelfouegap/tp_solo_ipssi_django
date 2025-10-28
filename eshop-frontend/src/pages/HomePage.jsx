@@ -19,13 +19,10 @@ import {
   MdWatch 
 } from 'react-icons/md';
 import { theme } from '../theme';
+import HeaderWithCart from '../components/Header';
+import AddToCartButton from '../components/AddToCartButton';
 import {
   AppContainer,
-  Header,
-  HeaderContent,
-  Logo,
-  Nav,
-  NavLink,
   Main,
   SectionTitle,
   SectionSubtitle,
@@ -124,7 +121,7 @@ const HeroButton = styled(Button)`
   }
 `;
 
-// Section des produits vedettes
+// Section des produits
 const FeaturedSection = styled.section`
   margin-bottom: ${theme.spacing.xxxxl};
 `;
@@ -367,7 +364,7 @@ function HomePage() {
       try {
         setLoading(true);
         const [productsResponse, categoriesResponse] = await Promise.all([
-          apiService.getFeaturedProducts(),
+          apiService.getProducts(),
           apiService.getCategories()
         ]);
         
@@ -387,24 +384,7 @@ function HomePage() {
   if (loading) {
     return (
       <AppContainer>
-        <Header>
-          <HeaderContent>
-            <Logo>
-              <FiZap style={{ marginRight: '0.5rem', color: '#F59E0B' }} />
-              TechShop
-            </Logo>
-            <Nav>
-              <NavLink as={Link} to="/" className="active">
-                <FiShoppingBag />
-                Accueil
-              </NavLink>
-              <NavLink as={Link} to="/catalog">
-                <FiShoppingCart />
-                Catalogue
-              </NavLink>
-            </Nav>
-          </HeaderContent>
-        </Header>
+        <HeaderWithCart />
         <Main>
           <LoadingSpinner />
         </Main>
@@ -415,24 +395,7 @@ function HomePage() {
   if (error) {
     return (
       <AppContainer>
-        <Header>
-          <HeaderContent>
-            <Logo>
-              <FiZap style={{ marginRight: '0.5rem', color: '#F59E0B' }} />
-              TechShop
-            </Logo>
-            <Nav>
-              <NavLink as={Link} to="/" className="active">
-                <FiShoppingBag />
-                Accueil
-              </NavLink>
-              <NavLink as={Link} to="/catalog">
-                <FiShoppingCart />
-                Catalogue
-              </NavLink>
-            </Nav>
-          </HeaderContent>
-        </Header>
+        <HeaderWithCart />
         <Main>
           <ErrorMessage>{error}</ErrorMessage>
         </Main>
@@ -442,24 +405,7 @@ function HomePage() {
 
   return (
     <AppContainer>
-      <Header>
-        <HeaderContent>
-          <Logo>
-            <FiZap style={{ marginRight: '0.5rem', color: '#F59E0B' }} />
-            TechShop
-          </Logo>
-          <Nav>
-            <NavLink as={Link} to="/" className="active">
-              <FiShoppingBag />
-              Accueil
-            </NavLink>
-            <NavLink as={Link} to="/catalog">
-              <FiShoppingCart />
-              Catalogue
-            </NavLink>
-          </Nav>
-        </HeaderContent>
-      </Header>
+      <HeaderWithCart />
 
       <Main>
         {/* Hero Section */}
@@ -487,14 +433,14 @@ function HomePage() {
           </HeroContent>
         </HeroSection>
 
-        {/* Produits vedettes */}
+        {/* Nos produits */}
         <FeaturedSection>
           <SectionTitle>
             <FiTrendingUp style={{ marginRight: '1rem', color: '#6366F1' }} />
-            Produits vedettes
+            Nos produits
           </SectionTitle>
           <SectionSubtitle>
-            Découvrez notre sélection des meilleurs produits du moment, choisis par nos experts
+            Découvrez notre catalogue complet de produits high-tech
           </SectionSubtitle>
           
           <ProductGrid>
@@ -519,6 +465,11 @@ function HomePage() {
                       <FiArrowRight />
                     </ViewButton>
                   </ProductPrice>
+                  
+                  {/* Bouton d'ajout au panier */}
+                  <div style={{ marginTop: theme.spacing.md }}>
+                    <AddToCartButton product={product} size="compact" />
+                  </div>
                 </ProductInfo>
               </ProductCard>
             ))}

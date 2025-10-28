@@ -13,6 +13,10 @@ import {
 } from 'react-icons/fi';
 import { theme } from '../theme';
 import {
+  Button,
+  Card,
+  LoadingSpinner,
+  ErrorMessage,
   AppContainer,
   Header,
   HeaderContent,
@@ -20,13 +24,11 @@ import {
   Nav,
   NavLink,
   Main,
-  SectionTitle,
-  Button,
-  Card,
-  LoadingSpinner,
-  ErrorMessage
+  SectionTitle
 } from '../components/Layout';
 import { apiService } from '../services/api';
+import AddToCartButton from '../components/AddToCartButton';
+import HeaderWithCart from '../components/Header';
 
 // Layout du catalogue
 const CatalogLayout = styled.div`
@@ -148,6 +150,12 @@ const PriceSeparator = styled.span`
   flex-shrink: 0; /* Empêche le rétrécissement du séparateur */
   min-width: 20px;
   text-align: center;
+`;
+
+const MainCatalog = styled.main`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: ${theme.spacing.xl};
 `;
 
 const SearchInput = styled.input`
@@ -441,51 +449,18 @@ function CatalogPage() {
   if (error) {
     return (
       <AppContainer>
-        <Header>
-          <HeaderContent>
-            <Logo>
-              <FiZap style={{ marginRight: '0.5rem', color: '#F59E0B' }} />
-              TechShop
-            </Logo>
-            <Nav>
-              <NavLink as={Link} to="/">
-                <FiShoppingBag />
-                Accueil
-              </NavLink>
-              <NavLink as={Link} to="/catalog" className="active">
-                <FiShoppingCart />
-                Catalogue
-              </NavLink>
-            </Nav>
-          </HeaderContent>
-        </Header>
-        <Main>
+        <HeaderWithCart />
+        <MainCatalog>
           <ErrorMessage>{error}</ErrorMessage>
-        </Main>
+        </MainCatalog>
       </AppContainer>
     );
   }
 
   return (
     <AppContainer>
-        <Header>
-          <HeaderContent>
-            <Logo>
-              <FiZap style={{ marginRight: '0.5rem', color: '#F59E0B' }} />
-              TechShop
-            </Logo>
-            <Nav>
-              <NavLink as={Link} to="/">
-                <FiShoppingBag />
-                Accueil
-              </NavLink>
-              <NavLink as={Link} to="/catalog" className="active">
-                <FiShoppingCart />
-                Catalogue
-              </NavLink>
-            </Nav>
-          </HeaderContent>
-        </Header>      <Main>
+      <HeaderWithCart />
+      <MainCatalog>
         <SectionTitle>
           <FiGrid style={{ marginRight: '1rem', color: '#6366F1' }} />
           Catalogue produits
@@ -609,13 +584,18 @@ function CatalogPage() {
                     <ProductPrice>
                       <Price>{product.price} €</Price>
                     </ProductPrice>
+                    
+                    {/* Bouton d'ajout au panier */}
+                    <div style={{ marginTop: theme.spacing.md }}>
+                      <AddToCartButton product={product} size="compact" />
+                    </div>
                   </ProductCard>
                 ))}
               </ProductGrid>
             )}
           </ProductsSection>
         </CatalogLayout>
-      </Main>
+      </MainCatalog>
     </AppContainer>
   );
 }
