@@ -1,0 +1,5 @@
+Page d'accueil : présentation du site.
+Catalogue/Recherche : liste de produits avec filtres (catégorie, prix, etc.).
+Page produit : détails d'un produit (description, image, prix).
+Backend : Django.
+Frontend : technologie au choix (React XD), avec respect du thème Neon Green/Yellow/Purple cyberpunk.
