@@ -31,7 +31,7 @@ import { apiService } from '../services/api';
 // Layout du catalogue
 const CatalogLayout = styled.div`
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: minmax(260px, 300px) 1fr;
   gap: ${theme.spacing.xxl};
   align-items: start;
   
@@ -39,21 +39,31 @@ const CatalogLayout = styled.div`
     grid-template-columns: 1fr;
     gap: ${theme.spacing.lg};
   }
+  
+  @media (max-width: 320px) {
+    grid-template-columns: 1fr;
+    gap: ${theme.spacing.md};
+  }
 `;
 
 // Sidebar des filtres
 const FilterSidebar = styled.aside`
   position: sticky;
   top: 120px;
+  min-width: 260px;
+  max-width: 300px;
   
   @media (max-width: ${theme.breakpoints.tablet}) {
     position: static;
+    min-width: auto;
+    max-width: none;
   }
 `;
 
 const FilterCard = styled(Card)`
   margin-bottom: ${theme.spacing.lg};
   padding: ${theme.spacing.lg};
+  overflow: hidden; /* Empêche le débordement */
 `;
 
 const FilterTitle = styled.h3`
@@ -105,21 +115,39 @@ const PriceRange = styled.div`
   display: flex;
   gap: ${theme.spacing.sm};
   align-items: center;
+  width: 100%;
 `;
 
 const PriceInput = styled.input`
   flex: 1;
+  min-width: 0; /* Permet à flex de réduire la taille si nécessaire */
   padding: ${theme.spacing.sm};
   border: 1px solid ${theme.colors.border.medium};
   border-radius: ${theme.borderRadius.md};
   background: ${theme.colors.background.card};
   color: ${theme.colors.text.primary};
   font-size: 0.9rem;
+  box-sizing: border-box; /* Inclut padding et border dans la largeur */
+  width: 100%;
   
   &:focus {
     outline: none;
     border-color: ${theme.colors.primary.main};
   }
+  
+  /* Amélioration pour les petits écrans */
+  @media (max-width: ${theme.breakpoints.tablet}) {
+    font-size: 0.8rem;
+    padding: ${theme.spacing.xs};
+  }
+`;
+
+const PriceSeparator = styled.span`
+  color: ${theme.colors.text.secondary};
+  font-weight: 500;
+  flex-shrink: 0; /* Empêche le rétrécissement du séparateur */
+  min-width: 20px;
+  text-align: center;
 `;
 
 const SearchInput = styled.input`
@@ -219,11 +247,30 @@ const ProductImage = styled.div`
   background: ${theme.colors.background.secondary};
   border-radius: ${theme.borderRadius.lg};
   margin-bottom: ${theme.spacing.md};
-  background-image: url(${props => props.src});
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
   position: relative;
+  overflow: hidden;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+  }
+  
+  &:hover img {
+    transform: scale(1.05);
+  }
+`;
+
+const PlaceholderProductImage = styled.div`
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, ${theme.colors.background.secondary}, ${theme.colors.background.tertiary});
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${theme.colors.text.secondary};
+  font-size: 2rem;
 `;
 
 const ProductCategory = styled.span`
@@ -484,7 +531,7 @@ function CatalogPage() {
                     value={minPrice}
                     onChange={(e) => setMinPrice(e.target.value)}
                   />
-                  <span>-</span>
+                  <PriceSeparator>-</PriceSeparator>
                   <PriceInput
                     type="number"
                     placeholder="Max"
@@ -540,7 +587,22 @@ function CatalogPage() {
                     as={Link}
                     to={`/product/${product.id}`}
                   >
-                    <ProductImage src={product.image} />
+                    <ProductImage>
+                      {product.image ? (
+                        <img 
+                          src={product.image}
+                          alt={product.name}
+                          onError={(e) => {
+                            console.error('Erreur de chargement d\'image:', e.target.src);
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <PlaceholderProductImage style={product.image ? {display: 'none'} : {}}>
+                        📦
+                      </PlaceholderProductImage>
+                    </ProductImage>
                     <ProductCategory>{product.category_name}</ProductCategory>
                     <ProductName>{product.name}</ProductName>
                     <ProductDescription>{product.description}</ProductDescription>

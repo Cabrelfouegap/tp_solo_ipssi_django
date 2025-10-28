@@ -42,6 +42,12 @@ class Product(models.Model):
         null=True,
         verbose_name="Image"
     )
+    image_url = models.URLField(
+        blank=True, 
+        null=True,
+        verbose_name="URL de l'image",
+        help_text="URL de l'image du produit"
+    )
     stock = models.PositiveIntegerField(default=0, verbose_name="Stock")
     is_available = models.BooleanField(default=True, verbose_name="Disponible")
     featured = models.BooleanField(default=False, verbose_name="Mis en avant")

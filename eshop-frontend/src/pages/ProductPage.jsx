@@ -25,9 +25,32 @@ const ProductImageSection = styled.div`
   text-align: center;
 `;
 
-const ProductImage = styled.div`
+const ProductImageContainer = styled.div`
   width: 100%;
   height: 400px;
+  border-radius: 12px;
+  border: 1px solid ${theme.colors.border.secondary};
+  margin-bottom: ${theme.spacing.lg};
+  position: relative;
+  overflow: hidden;
+  background: ${theme.colors.background.secondary};
+`;
+
+const ProductImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+`;
+
+const PlaceholderImage = styled.div`
+  width: 100%;
+  height: 100%;
   background: ${theme.colors.gradients.dark};
   border-radius: 12px;
   display: flex;
@@ -35,8 +58,6 @@ const ProductImage = styled.div`
   justify-content: center;
   color: ${theme.colors.primary.neonGreen};
   font-size: 8rem;
-  border: 1px solid ${theme.colors.border.secondary};
-  margin-bottom: ${theme.spacing.lg};
   position: relative;
   overflow: hidden;
   
@@ -220,7 +241,21 @@ function ProductPage() {
       
       <ProductContainer>
         <ProductImageSection>
-          <ProductImage></ProductImage>
+          <ProductImageContainer>
+            {product.image ? (
+              <ProductImage 
+                src={product.image}
+                alt={product.name}
+                onError={(e) => {
+                  console.error('Erreur de chargement d\'image:', e.target.src);
+                  e.target.style.display = 'none';
+                  e.target.nextSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <PlaceholderImage style={product.image ? {display: 'none'} : {}}>
+            </PlaceholderImage>
+          </ProductImageContainer>
           <StockStatus inStock={product.is_in_stock}>
             {product.is_in_stock ? 'EN STOCK' : 'RUPTURE DE STOCK'}
           </StockStatus>

@@ -19,6 +19,7 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductListSerializer(serializers.ModelSerializer):
     """Serializer pour la liste des produits (vue compacte)"""
     category_name = serializers.CharField(source='category.name', read_only=True)
+    image = serializers.SerializerMethodField()
     
     class Meta:
         model = Product
@@ -26,12 +27,22 @@ class ProductListSerializer(serializers.ModelSerializer):
             'id', 'name', 'price', 'category', 'category_name', 
             'image', 'stock', 'is_available', 'featured', 'is_in_stock'
         ]
+    
+    def get_image(self, obj):
+        """Retourne l'URL complète de l'image"""
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
     """Serializer pour les détails d'un produit (vue complète)"""
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(write_only=True)
+    image = serializers.SerializerMethodField()
     
     class Meta:
         model = Product
@@ -41,6 +52,15 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'is_in_stock']
+    
+    def get_image(self, obj):
+        """Retourne l'URL complète de l'image"""
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
 
 
 class ProductCreateUpdateSerializer(serializers.ModelSerializer):
